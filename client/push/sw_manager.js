@@ -38,7 +38,6 @@
     }
 
     function registerServiceWorker() {
-      navigator.serviceWorker.register('sw.js');
       if ('serviceWorker' in navigator && 'PushManager' in window) {
         navigator.serviceWorker.register('sw.js')
         .then(function (registration) {
@@ -76,6 +75,20 @@
       });
     }
 
+    function updatePushSubscription() {
+      return new Promise(function (resolve, reject) {
+        navigator.serviceWorker.ready.then(function(registration) {
+          registration.pushManager.getSubscription().then(function (subscription) {
+		    pushSubscription = subscription;
+			resolve(pushSubscription.endpoint);
+          })
+	      .catch(function(error) {
+            reject(error);
+          });
+        });
+      });
+    }
+
     function requestPushPermission() {
     }
 
@@ -95,6 +108,17 @@
     self.unregister = function () {
       removePushTokenFromServer();
       unregisterServiceWorker();
+    };
+
+    /**
+     * get current push token
+     */
+    self.getPushToken = function () {
+      return new Promise(function (resolve, reject) {
+        updatePushSubscription().then(function (result) { 
+	  	  resolve(result); 
+	    });
+      });
     };
 
     /**
